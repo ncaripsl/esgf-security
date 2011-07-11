@@ -163,7 +163,7 @@ public class TrivialCertGenerator {
      * certificate is a CA that can sign other certs.
      * 
      * @param kp KeyPair storing the keys for this certificate
-     * @param DN The DN used when generating
+     * @param DN The DN used when generating (e.g. "O=MyOrg, CN=MyName")
      * @return The created certificate
      * @throws CertificateException if some certificate value could not be set
      * @throws IOException If some objects couldn't be created (e.g. DN is not
@@ -195,7 +195,7 @@ public class TrivialCertGenerator {
      * certificate info although this won't be checked.
      * 
      * @param kp KeyPair storing the keys for this certificate
-     * @param DN The DN used when generating
+     * @param DN The DN used when generating (e.g. "O=MyOrg, CN=MyName")
      * @return The created certificate
      * @throws CertificateException if some certificate value could not be set
      * @throws IOException If some objects couldn't be created (e.g. DN is not
