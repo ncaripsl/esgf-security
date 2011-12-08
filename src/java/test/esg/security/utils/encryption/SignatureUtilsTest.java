@@ -25,8 +25,10 @@ import esg.security.utils.ssl.TrivialCertGenerator;
 
 public class SignatureUtilsTest {
 
+    private static final String NS    = "urn:esgf:test:esg:security:utils:encryption:signatureutilstest";
     private static boolean      verbose = true;
-    private static final String XML1    = "<doc><item1>hi there...</item1><item2>hi there too...</item2></doc>";
+    private static final String XML1    = "<doc xmlns='" + NS +
+    		"'><item hostname='id1'>hi there...</item><item hostname='id2'>hi there too...</item></doc>";
     private static final String XML2    = "<doc><item1 id='item1'>hi there...</item1><item2 id='item2'>hi there too...</item2></doc>";
 
     private void showXML(Document doc) throws Exception {
@@ -93,7 +95,8 @@ public class SignatureUtilsTest {
         boolean result = SignatureUtils.verify(test, signature, cert);
         assertTrue("Signature doesn't match!", result);
     }
-
+    
+    
     @Test
     public void testXMLSignatureID() throws Exception {
         // Instantiate the document to be signed.

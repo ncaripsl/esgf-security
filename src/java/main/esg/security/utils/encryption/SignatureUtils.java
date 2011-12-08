@@ -1,5 +1,6 @@
 package esg.security.utils.encryption;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -43,9 +44,14 @@ import javax.xml.crypto.dsig.keyinfo.X509Data;
 import javax.xml.crypto.dsig.spec.C14NMethodParameterSpec;
 import javax.xml.crypto.dsig.spec.TransformParameterSpec;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.sun.org.apache.xml.internal.serialize.OutputFormat;
+import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
 public class SignatureUtils {
     public static final String DEFAULT_ALGORITHM         = "SHA1withRSA";
@@ -235,13 +241,29 @@ public class SignatureUtils {
         // node with the same id will get signed... not sure though.
         // We should have unique ids here or test it more properly.
         Node att = nodeToSign.getAttributes().getNamedItem("id");
-        if (att == null) {
-            att = nodeToSign.getOwnerDocument().createAttribute("id");
+        if (att == null) {           
+            att = nodeToSign.getOwnerDocument().createAttribute("xmlns:sec");
+            att.setNodeValue(XMLSignature.XMLNS);
+            nodeToSign.getAttributes().setNamedItem(att);
+            
+            att = nodeToSign.getOwnerDocument().createAttributeNS(XMLSignature.XMLNS, "id");
             att.setNodeValue(UUID.randomUUID().toString());
             nodeToSign.getAttributes().setNamedItem(att);
         }
+        OutputFormat format = new OutputFormat(nodeToSign.getOwnerDocument());
+        format.setLineWidth(65);
+        format.setIndenting(true);
+        format.setIndent(2);
+        XMLSerializer serializer = new XMLSerializer(System.out, format);
+        try {
+            serializer.serialize(nodeToSign.getOwnerDocument());
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        
         String reference = "#" + att.getNodeValue();
-
+        System.out.println(reference);
         // Create a Reference to the enveloped document (in this case,
         // you are signing the whole document, so a URI of "" signifies
         // that, and also specify the SHA1 digest algorithm and
@@ -254,7 +276,6 @@ public class SignatureUtils {
                                               .newTransform(Transform.ENVELOPED,
                                                             (TransformParameterSpec) null)),
                               null, null);
-
         // Create the SignedInfo.
         SignedInfo si = fac
                 .newSignedInfo(fac.newCanonicalizationMethod(CanonicalizationMethod.EXCLUSIVE,
@@ -273,7 +294,8 @@ public class SignatureUtils {
         // Create a DOMSignContext and specify the RSA PrivateKey and
         // location of the resulting XMLSignature's parent element.
         DOMSignContext dsc = new DOMSignContext(privKey, nodeToSign);
-
+        dsc.putNamespacePrefix(XMLSignature.XMLNS, "ds");
+        
         // Create the XMLSignature, but don't sign it yet.
         XMLSignature xmlSig = fac.newXMLSignature(si, ki);
 
